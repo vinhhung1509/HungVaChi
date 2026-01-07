@@ -1,63 +1,109 @@
-<table id="tbl">
-  <thead>
-    <tr><th>UID</th><th>Views</th><th>Last updated</th></tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Gallery</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    h1 {
+      text-align: center;
+      padding: 16px 8px;
+      font-size: 24px;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+      padding: 12px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .gallery img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .gallery img:hover {
+      transform: scale(1.03);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
 
-<script>
-const UIDS_URL  = 'https://vinhhung1509.github.io/ViewTikWeb/data/uids.json';
-const VIEWS_URL = 'https://vinhhung1509.github.io/ViewTikWeb/data/views.json';
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .lightbox img {
+      max-width: 95vw;
+      max-height: 95vh;
+      border-radius: 12px;
+    }
+    .lightbox.show {
+      display: flex;
+    }
+    .hint {
+      text-align: center;
+      font-size: 13px;
+      opacity: 0.7;
+      padding-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📸 Thư viện ảnh</h1>
+  <div class="hint">Bấm vào ảnh để xem to • Bấm ra ngoài để đóng</div>
 
-let uidList = [];
+  <div id="gallery" class="gallery"></div>
 
-// Load danh sách UID
-async function loadUIDs(){
-  try{
-    const res = await fetch(UIDS_URL + '?t=' + Date.now());
-    uidList = await res.json();
-  }catch(e){
-    console.error("Không đọc được uids.json:", e);
-    uidList = [];
-  }
-}
+  <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="" />
+  </div>
 
-// Load dữ liệu views
-async function loadViews(){
-  try{
-    const res = await fetch(VIEWS_URL + '?t=' + Date.now());
-    return await res.json();
-  }catch(e){
-    console.error("Không đọc được views.json:", e);
-    return {};
-  }
-}
+  <script>
+    // 👉 THÊM TÊN ẢNH CỦA BẠN VÀO ĐÂY (trong thư mục /img)
+    const images = [
+      'img/1.jpg',
+      'img/2.jpg',
+      'img/3.jpg'
+      // thêm tiếp ở đây
+    ];
 
-// Render bảng
-async function render(){
-  const data = await loadViews();
-  const tbody = document.querySelector('#tbl tbody');
-  tbody.innerHTML = '';
+    const gallery = document.getElementById('gallery');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
 
-  for(const uid of uidList){
-    const info = data[uid] || {};
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${uid}</td>
-      <td>${info.views ?? '—'}</td>
-      <td>${info.updated ?? '—'}</td>
-    `;
-    tbody.appendChild(row);
-  }
-}
+    images.forEach(src => {
+      const img = document.createElement('img');
+      img.src = src;
+      img.loading = 'lazy';
+      img.onclick = () => openLightbox(src);
+      gallery.appendChild(img);
+    });
 
-// Chạy lần đầu
-async function init(){
-  await loadUIDs();
-  render();
-  // Cập nhật mỗi 10s
-  setInterval(render, 10000);
-}
+    function openLightbox(src) {
+      lightboxImg.src = src;
+      lightbox.classList.add('show');
+    }
 
-init();
-</script>
+    function closeLightbox() {
+      lightbox.classList.remove('show');
+      lightboxImg.src = '';
+    }
+  </script>
+</body>
+</html>
